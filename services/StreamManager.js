@@ -34,13 +34,17 @@ export class StreamManager {
         this.#startMonitoring();
     }
 
-
+    //streaming notifications
     #handleNotification(data) {
         const response = data.toString();
         if (!response.includes('XXX[')) {
             if (response.startsWith('batlv=')) {
                 const level = parseInt(response.split('=')[1]);
                 this.#stats.updateBattery(level);
+                if (level === 3) {
+                    logger.warn('Stream', 'Low battery detected. Stopping stream...');
+                    this.stopStream();
+                }
             }
         } else if (this.#isStreaming) {
             this.#stats.incrementPackets();

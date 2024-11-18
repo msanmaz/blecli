@@ -1,0 +1,13 @@
+{
+  "name": "ble-cli-oop",
+  "type": "module",
+  "scripts": {
+    "start": "node index.js"
+  },
+  "dependencies": {
+    "@abandonware/noble": "^1.9.2-15",
+    "chalk": "^5.2.0",
+    "inquirer": "^9.2.7",
+    "lru-cache": "^11.0.1"
+  }
+}

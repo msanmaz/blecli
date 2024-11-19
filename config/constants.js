@@ -7,8 +7,8 @@ export const BLE_CONFIG = {
     },
     TIMEOUTS: {
         SCAN: 5000,
-        BATTERY_CHECK: 10000,
-        STATS_UPDATE: 1000
+        BATTERY_CHECK: 10000,  // Check battery every 10 seconds
+        STATS_UPDATE: 1000     // Update display every second
     },
     THRESHOLDS: {
         LOW_BATTERY: 5

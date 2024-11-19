@@ -4,7 +4,6 @@ import { BLEDevice } from './models/BLEDevice.js';
 import { StreamManager } from './services/StreamManager.js';
 import inquirer from 'inquirer';
 import chalk from 'chalk';
-import { logger } from './utils/logger.js';
 
 export class CLI {
     #noble;
@@ -12,7 +11,6 @@ export class CLI {
     #coalescer;
     #device;
     #streamManager;
-    #streamStats;
 
     constructor(noble) {
         this.#noble = noble;
@@ -47,6 +45,8 @@ export class CLI {
             await this.#device.connect();
             
             this.#streamManager = new StreamManager(this.#device);
+            await this.#streamManager.initialize();
+            
             await this.#commandLoop();
         } catch (error) {
             console.error(chalk.red(`Startup error: ${error.message}`));
@@ -58,7 +58,6 @@ export class CLI {
         const COMMANDS = [
             { name: 'Write Memory Commands', value: 'memory' },
             { name: 'Start Streaming', value: 'stream' },
-            { name: 'Battery Level Check', value: 'battery' },
             { name: 'Exit', value: 'exit' }
         ];
 
@@ -117,9 +116,6 @@ export class CLI {
                 case 'stream':
                     await this.#streamManager.startStream(side);
                     break;
-                case 'battery':
-                    await this.#checkBatteryLevel();
-                    break;
             }
         } catch (error) {
             console.error(chalk.red(`Error executing ${choice}: ${error.message}`));
@@ -139,36 +135,5 @@ export class CLI {
         } finally {
             process.exit(0);
         }
-    }
-
-    async #checkBatteryLevel() {
-        return new Promise((resolve, reject) => {
-            const handler = (data) => {
-                try {
-                    const response = data.toString();
-                    if (response.startsWith('batlv=')) {
-                        const level = parseInt(response.split('=')[1]);
-                        logger.info('Battery', `Level: ${level}%`);
-                        this.#device.removeNotificationListener(handler);
-                        resolve();
-                    }
-                } catch (error) {
-                    reject(error);
-                }
-            };
-    
-            try {
-                this.#device.onNotification(handler);
-                this.#device.sendCommand('batlv?');
-    
-                // Timeout after 2 seconds
-                setTimeout(() => {
-                    this.#device.removeNotificationListener(handler);
-                    resolve(); // Resolve instead of reject to avoid crash
-                }, 2000);
-            } catch (error) {
-                reject(error);
-            }
-        });
     }
 }
